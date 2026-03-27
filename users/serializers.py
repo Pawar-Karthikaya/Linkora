@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from .models import User, CountryCode
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -44,3 +45,42 @@ class CounterCodeSerializer(serializers.ModelSerializer):
         model = CountryCode
         fields = ['id', 'code', 'country_name', 'country_flag']
 
+
+
+
+class LoginSerializer(TokenObtainPairSerializer):
+    email = serializers.EmailField(required=False)
+    phone_number = serializers.CharField(required=False)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields.pop('username', None)  
+
+    def validate(self, attrs):
+        email = attrs.get('email')
+        phone = attrs.get('phone_number')
+        password = attrs.get('password')
+
+        user = None
+
+        if email:
+            user = User.objects.filter(email=email).first()
+        elif phone:
+            user = User.objects.filter(phone_number=phone).first()
+        else:
+            raise serializers.ValidationError("Email or phone is required")
+
+        if not user or not user.check_password(password):
+            raise serializers.ValidationError("Invalid credentials")
+
+        refresh = self.get_token(user)
+
+        return {
+            "access": str(refresh.access_token),
+            "refresh": str(refresh),
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email
+            }
+        }
