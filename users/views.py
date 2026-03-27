@@ -1,7 +1,9 @@
 from rest_framework import viewsets, status
 from .models import User, CountryCode
-from .serializers import UserSerializer, CounterCodeSerializer
+from .serializers import UserSerializer, CounterCodeSerializer, LoginSerializer
 from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
@@ -27,3 +29,6 @@ class UserViewSet(viewsets.ModelViewSet):
             },
             status.HTTP_201_CREATED    
         )
+    
+class LoginView(TokenObtainPairView):
+     serializer_class = LoginSerializer
