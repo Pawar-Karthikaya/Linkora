@@ -32,3 +32,5 @@ class UserViewSet(viewsets.ModelViewSet):
     
 class LoginView(TokenObtainPairView):
      serializer_class = LoginSerializer
+
+
