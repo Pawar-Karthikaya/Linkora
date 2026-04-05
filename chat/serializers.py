@@ -11,5 +11,5 @@ class MessageSerializer(serializers.ModelSerializer):
 class ConversationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fieds = '__all__'
+        fields = '__all__'
         

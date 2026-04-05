@@ -15,6 +15,7 @@ class CountryCode(models.Model):
 class User(AbstractUser):
     # allready existing fields in AbstractUser:
     # username, first_name, last_name, email, password, is_staff, is_superuser, groups, permissions
+    email = models.EmailField(unique=True)
     country_code = models.ForeignKey(
         CountryCode,
         on_delete=models.PROTECT,
