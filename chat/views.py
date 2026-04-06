@@ -8,6 +8,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from rest_framework.exceptions import PermissionDenied
+
 User = get_user_model()
 
 class ConversationViewSet(viewsets.ModelViewSet):
@@ -32,11 +34,18 @@ class ConversationViewSet(viewsets.ModelViewSet):
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
-        conversation = Conversation.objects.create()
-        conversation.participants.add(user, other_user)
+        conversation = Conversation.objects.filter(
+        particiapent=user
+        ).filter(
+            particiapent=other_user
+        ).distinct()
 
-        serializer = self.get_serializer(conversation)
-        return Response(serializer.data)
+        if conversation.exists():
+            serializer = self.get_serializer(conversation.first())
+            return Response(serializer.data)
+
+            serializer = self.get_serializer(conversation)
+            return Response(serializer.data)
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user).distinct()
@@ -49,12 +58,29 @@ class ConversationViewSet(viewsets.ModelViewSet):
     
 
 
+from rest_framework.exceptions import PermissionDenied
+
 class MessageViewSet(viewsets.ModelViewSet):
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     permission_classes = [IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(sender=self.request.user)
+    def get_queryset(self):
+        queryset = Message.objects.filter(
+            conversation__participants=self.request.user
+        ).distinct()
 
-        
+        conversation_id = self.request.query_params.get('conversation_id')
+
+        if conversation_id:
+            queryset = queryset.filter(conversation_id=conversation_id)
+
+        return queryset.order_by('timestamp')
+
+    def perform_create(self, serializer):
+        conversation = serializer.validated_data.get('conversation')
+
+        if self.request.user not in conversation.participants.all():
+            raise PermissionDenied("You are not part of this conversation")
+
+        serializer.save(sender=self.request.user)
