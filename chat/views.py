@@ -21,31 +21,33 @@ class ConversationViewSet(viewsets.ModelViewSet):
         user = request.user
         participants = request.data.get('participants')
 
-        if not participants:
+        if not participants or len(participants) == 0:
             return Response({"error": "participants field is required"}, status=400)
 
         other_user_id = participants[0]
-
-        from django.contrib.auth import get_user_model
-        User = get_user_model()
 
         try:
             other_user = User.objects.get(id=other_user_id)
         except User.DoesNotExist:
             return Response({"error": "User not found"}, status=404)
 
+        # Check if conversation already exists between these two users
         conversation = Conversation.objects.filter(
-        particiapent=user
+            participants=user
         ).filter(
-            particiapent=other_user
+            participants=other_user
         ).distinct()
 
         if conversation.exists():
+            # Conversation found → return existing one
             serializer = self.get_serializer(conversation.first())
-            return Response(serializer.data)
+            return Response(serializer.data, status=200)
 
-            serializer = self.get_serializer(conversation)
-            return Response(serializer.data)
+        # Conversation not found → create a new one
+        conversation = Conversation.objects.create()
+        conversation.participants.add(user, other_user)
+        serializer = self.get_serializer(conversation)
+        return Response(serializer.data, status=201)
 
     def get_queryset(self):
         return Conversation.objects.filter(participants=self.request.user).distinct()
