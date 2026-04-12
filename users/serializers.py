@@ -25,11 +25,6 @@ class UserSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Phone number must contain only digits.")
         return value
 
-    def validate_email(self, value):
-        if '@' not in value:
-            raise serializers.ValidationError("Enter a valid email address.")
-        return value
-
     def validate_username(self, value):
         if len(value) < 3:
             raise serializers.ValidationError("Username must be at least 3 characters long.")

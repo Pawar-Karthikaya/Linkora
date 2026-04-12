@@ -21,7 +21,7 @@ class User(AbstractUser):
         on_delete=models.PROTECT,
         null=True,
         blank=True)
-    phone_number = models.CharField(max_length=20, blank=True, unique=True)
+    phone_number = models.CharField(max_length=20, blank=True, null=True, unique=True)    
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
     bio = models.TextField(blank=True)
     def __str__(self):

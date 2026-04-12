@@ -56,7 +56,9 @@ class UserViewSet(viewsets.ModelViewSet):
         If logged-in user has ID = 1,
         this will return users with ID != 1.
         """
-        return User.objects.exclude(id=self.request.user.id)
+        if self.request.user.is_authenticated:
+            return User.objects.exclude(id=self.request.user.id)
+        return User.objects.none()
 
 
     def create(self, request, *args, **kwargs):
@@ -106,3 +108,4 @@ class LoginView(TokenObtainPairView):
 class CountryCodeViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = CountryCode.objects.all()
     serializer_class = CounterCodeSerializer
+    permission_classes = [AllowAny]
