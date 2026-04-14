@@ -26,12 +26,13 @@ SECRET_KEY = 'django-insecure-b(=jguj(**8!wjw9ry0^!172#uy*=nyq97#!3#b7*m(xtoiu0n
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", "*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,7 +42,8 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'corsheaders',
-    'chat'
+    'chat',
+    'channels',
 ]
 
 MIDDLEWARE = [
@@ -124,6 +126,23 @@ SIMPLE_JWT = {
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
+ASGI_APPLICATION  = "Linkora.asgi.application"
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+
+CORS_ALLOW_ALL_ORIGINS = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+]
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
